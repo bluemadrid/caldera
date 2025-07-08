@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 from datetime import datetime
 
-app = Flask(__name__)
+app = Flask(caldera)
 
 # Variable global para almacenar la temperatura
 current_temperature = {
