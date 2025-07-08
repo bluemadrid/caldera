@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: api-caldera
+    name: caldera
     env: python
     plan: free
     buildCommand: ""
