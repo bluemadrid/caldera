@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: api-caldera
+    env: python
+    plan: free
+    buildCommand: ""
+    startCommand: gunicorn main:app
