@@ -7,7 +7,7 @@ import io
 app = Flask(__name__)
 
 current_temperature = {
-    "value": 65.0,
+    "value": 25.0,
     "timestamp": datetime.now().isoformat()
 }
 
