@@ -1,5 +1,3 @@
-import matplotlib
-matplotlib.use('Agg')  # ← AGREGAR ESTO PRIMERO
 from flask import Flask, request, jsonify, send_file
 from datetime import datetime, timedelta
 import pandas as pd
