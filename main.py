@@ -44,13 +44,47 @@ def update_temperature():
     except Exception as e:
         return jsonify({"error": f"Server error: {str(e)}"}), 500
 
- # 7 días de datos
+@app.route("/grafico", methods=["GET"])
+def grafico_temperatura():
+    try:
+        if not os.path.exists(CSV_FILE):
+            return jsonify({"error": "No hay datos"}), 404
+
+        df = pd.read_csv(CSV_FILE)
+        df['timestamp'] = pd.to_datetime(df['timestamp'], format='ISO8601', errors='coerce')
+        df = df.dropna(subset=['timestamp'])
+        
+        if df.empty:
+            return jsonify({"error": "Sin datos válidos"}), 404
+
+        # 7 días de datos
         ahora = pd.Timestamp.now()
         hace_7d = ahora - pd.Timedelta(days=7)
         df_filtrado = df[df['timestamp'] >= hace_7d]
         
         if df_filtrado.empty:
             return jsonify({"error": "Sin datos recientes"}), 404
+
+        # ¡SIN resample! Todos los puntos
+        plt.figure(figsize=(14, 6))
+        plt.plot(df_filtrado['timestamp'], df_filtrado['valor_sensor'], 
+                 'o-', color='orange', markersize=6, linewidth=2, label='Temperatura')
+        plt.title("Temperatura - Últimos 7 días")
+        plt.xlabel("Hora")
+        plt.ylabel("°C")
+        plt.grid(True, alpha=0.3)
+        plt.xticks(rotation=45)
+        plt.tight_layout()
+
+        buf = io.BytesIO()
+        plt.savefig(buf, format='png', dpi=100, bbox_inches='tight')
+        buf.seek(0)
+        plt.close()
+        return send_file(buf, mimetype='image/png')
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 
 @app.route("/datos", methods=["GET"])
 def ver_datos():
