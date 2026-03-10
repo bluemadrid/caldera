@@ -24,7 +24,7 @@ def update_temperature():
         except (ValueError, TypeError):
             return jsonify({"error": "Invalid 'value' format"}), 400
         
-        timestamp = datetime.now().isoformat()
+        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         new_row = pd.DataFrame([{
             "timestamp": timestamp,
             "valor_sensor": value
