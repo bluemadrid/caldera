@@ -93,6 +93,27 @@ def grafico_temperatura():
     except Exception as e:
         return jsonify({"error": f"Error: {str(e)}"}), 500
 
+@app.route("/datos", methods=["GET"])
+def ver_datos():
+    """Ver todos los datos del CSV"""
+    try:
+        if not os.path.exists(CSV_FILE):
+            return jsonify({"error": "CSV no existe"}), 404
+        
+        df = pd.read_csv(CSV_FILE)
+        df['timestamp'] = pd.to_datetime(df['timestamp'])
+        
+        # Devolver JSON con últimos 50 registros
+        datos_json = df.tail(50).to_dict('records')
+        
+        return jsonify({
+            "total_registros": len(df),
+            "datos": datos_json
+        })
+        
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 
 @app.route("/", methods=["GET"])
 def home():
