@@ -54,7 +54,7 @@ def grafico_temperatura():
         df = pd.read_csv(CSV_FILE)
         df['timestamp'] = pd.to_datetime(df['timestamp'], format='ISO8601', errors='coerce')
         df = df.dropna(subset=['timestamp'])
-        //df['timestamp'] = pd.to_datetime(df['timestamp'], format='ISO8601', errors='coerce')
+       
         if df.empty:
             return jsonify({"error": "Archivo vacío"}), 404
 
