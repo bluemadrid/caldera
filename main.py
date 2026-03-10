@@ -48,38 +48,43 @@ def grafico_temperatura():
         if not os.path.exists(CSV_FILE):
             return jsonify({"error": "No hay datos registrados"}), 404
 
+        # Leer y convertir timestamp correctamente
         df = pd.read_csv(CSV_FILE)
-
-        # Asegurar que 'timestamp' es datetime
         df['timestamp'] = pd.to_datetime(df['timestamp'], errors='coerce')
-
-        # Eliminar filas sin fecha válida
         df = df.dropna(subset=['timestamp'])
+        
         if df.empty:
-            return jsonify({"error": "Fechas no válidas en CSV"}), 404
+            return jsonify({"error": "Archivo vacío"}), 404
 
-        ahora = datetime.now()
-        hace_24h = ahora - timedelta(hours=24)
+        # Filtrar últimas 24 horas
+        ahora = pd.Timestamp.now()
+        hace_24h = ahora - pd.Timedelta(hours=24)
         df_filtrado = df[df['timestamp'] >= hace_24h]
-
+        
         if df_filtrado.empty:
-            return jsonify({"error": "No hay datos en las últimas 24 horas"}), 404
+            return jsonify({"error": "No hay datos en últimas 24h"}), 404
 
-        df_filtrado = df_filtrado.set_index('timestamp')
-        df_15min = df_filtrado.resample('15T').mean().dropna()
+        # CAMBIO CRÍTICO: '15T' → '15min'
+        df_filtrado.set_index('timestamp', inplace=True)
+        df_15min = df_filtrado.resample('15min').mean().dropna()  # ← 15min, NO 15T
 
         if df_15min.empty:
-            return jsonify({"error": "No hay datos suficientes para graficar"}), 404
+            return jsonify({"error": "Datos insuficientes"}), 404
 
+        # Gráfica
+        import matplotlib
+        matplotlib.use('Agg')
+        import matplotlib.pyplot as plt
+        
         fig, ax = plt.subplots(figsize=(12, 6))
-        ax.plot(df_15min.index, df_15min['valor_sensor'],
-                marker='o', color='orange', linestyle='-', linewidth=2, markersize=4)
-        ax.set_title("Temperatura - Últimas 24 horas (cada 15 min)")
+        ax.plot(df_15min.index, df_15min['valor_sensor'], 
+                marker='o', color='#FF8C00', linewidth=2, markersize=4)
+        ax.set_title("Temperatura - Últimas 24h (15min)")
         ax.set_xlabel("Hora")
-        ax.set_ylabel("Temperatura (°C)")
+        ax.set_ylabel("°C")
         ax.grid(True, alpha=0.3)
-        fig.autofmt_xdate()
-        fig.tight_layout()
+        plt.xticks(rotation=45)
+        plt.tight_layout()
 
         buf = io.BytesIO()
         plt.savefig(buf, format='png', dpi=100, bbox_inches='tight')
@@ -89,7 +94,7 @@ def grafico_temperatura():
         return send_file(buf, mimetype='image/png')
 
     except Exception as e:
-        return jsonify({"error": f"Error generando gráfica: {str(e)}"}), 500
+        return jsonify({"error": f"Error: {str(e)}"}), 500
 
 
 @app.route("/", methods=["GET"])
