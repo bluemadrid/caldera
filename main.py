@@ -1,3 +1,5 @@
+import matplotlib
+matplotlib.use ('Agg')
 from flask import Flask, request, jsonify, send_file
 from datetime import datetime, timedelta
 import pandas as pd
@@ -70,11 +72,6 @@ def grafico_temperatura():
 
         if df_15min.empty:
             return jsonify({"error": "Datos insuficientes"}), 404
-
-        # Gráfica
-        import matplotlib
-        matplotlib.use('Agg')
-        import matplotlib.pyplot as plt
         
         fig, ax = plt.subplots(figsize=(12, 6))
         ax.plot(df_15min.index, df_15min['valor_sensor'], 
