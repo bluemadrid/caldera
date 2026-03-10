@@ -66,7 +66,7 @@ def grafico_temperatura():
 
         # CAMBIO CRÍTICO: '15T' → '15min'
         df_filtrado.set_index('timestamp', inplace=True)
-        df_15min = df_filtrado.resample('15min').mean().dropna()  # ← 15min, NO 15T
+        df_15min = df_filtrado.resample('5min').mean().dropna()  # ← 15min, NO 15T
 
         if df_15min.empty:
             return jsonify({"error": "Datos insuficientes"}), 404
